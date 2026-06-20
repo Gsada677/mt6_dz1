@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mt_6_dz1/Quiz_Model.dart';
+import 'package:mt_6_dz1/features/quiz/data/model/Quiz_Model.dart';
 class QuizQuestions extends StatefulWidget {
   final List<QuizModel>list;
   const QuizQuestions({super.key ,required this.list});
