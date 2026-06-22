@@ -1,26 +1,41 @@
-import 'dart:convert';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mt_6_dz1/Quiz_Model.dart';
-import 'package:mt_6_dz1/features/quiz/ui/Quiz_Questions.dart';
+import 'package:mt_6_dz1/features/quiz/data/repositoryi/repo.dart';
 import 'package:mt_6_dz1/features/quiz/ui/cubit/quiz_cubit.dart';
 import 'package:mt_6_dz1/features/quiz/ui/onBoarding.dart';
+import 'package:mt_6_dz1/features/quiz/ui/second_quiz_page.dart';
 
 void main() {
-  runApp( MaterialApp(
-      home:QuizOnboarding()));
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MaterialApp(home: QuizOnboarding()));
 }
 class Quizpage extends StatefulWidget{
+  final Repo? repo;
+
+  const Quizpage({super.key, this.repo});
+
   @override
   State<Quizpage> createState() => _QuizPageState();
 }
 
 class _QuizPageState extends State<Quizpage> {
    String all='All';
+  final Map<String,int>complexity= {
+     'All':30,
+    'Hard':20,
+    'Medium':15,
+    'Easy':10
+
+   };
   final cubit=QuizCubit();
-  int sliderValue=10;
+  late final Repo repo;
+  int sliderValue=5;
+
+  @override
+  void initState() {
+    super.initState();
+    repo = widget.repo ?? Repo();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +47,8 @@ class _QuizPageState extends State<Quizpage> {
 
     if (state is QuizLoaded) {
       print(state.list.first);
-      Navigator.push(context, MaterialPageRoute(builder: (_)=>QuizQuestions(list: state.list,)));
+      Navigator.push(context, MaterialPageRoute(builder: (_)=>SecondQuizPage(list: state.list,currentQuestion: 0,
+        difficulty: all, repo: repo,)));
     }
   },
   child: Column(
@@ -43,41 +59,13 @@ class _QuizPageState extends State<Quizpage> {
             Text(sliderValue.toString(),style: TextStyle(
               fontSize: 50,fontWeight: FontWeight.w900,
             ),),
-            Slider(value: sliderValue.toDouble(),min:1, max:30,
+            Slider(value: sliderValue.toDouble(),min:3, max:30,
                 activeColor: Colors.purple,
                 inactiveColor: Colors.white,
-                onChanged: (double newValue)=>{
-              setState(()=>{
-                sliderValue=newValue.round()
-              },
-              ),
-            }
+                onChanged: (double newValue)=>setState(() {
+                  sliderValue=newValue.round();
+                })
             ),
-
-
-
-                DropdownButtonFormField<String>(value: all,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-
-                    ),
-                    dropdownColor: Colors.white,
-                    iconEnabledColor: Colors.deepPurpleAccent,
-                    items: ['All','Easy','Medium','Hard'].map(
-                            (item)=>DropdownMenuItem(value: item,
-                                child: Text(item),),).toList(),
-                    onChanged: (value){
-                  setState(() {
-                    all=value!;
-
-                  });
-                    }),
-                SizedBox(height: 10,),
                  DropdownButtonFormField<String>(value: all,
                       decoration: InputDecoration(
                         filled: true,
@@ -90,15 +78,38 @@ class _QuizPageState extends State<Quizpage> {
                       ),
                       dropdownColor: Colors.white,
                       iconEnabledColor: Colors.deepPurpleAccent,
-                      items: ['All','Easy','Medium','Hard'].map(
-                            (item)=>DropdownMenuItem(value: item,
-                          child: Text(item),),).toList(),
+                      items: complexity.keys.map((String key){
+                        return DropdownMenuItem<String>(value: key,
+                            child:Text(key) );
+                      }).toList(),
                       onChanged: (value){
                         setState(() {
                           all=value!;
-
+                          sliderValue=complexity[value]!;
                         });
                       }),
+            DropdownButtonFormField<String>(value: all,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide.none,
+                  ),
+
+                ),
+                dropdownColor: Colors.white,
+                iconEnabledColor: Colors.deepPurpleAccent,
+                items: complexity.keys.map((String key){
+                  return DropdownMenuItem<String>(value: key,
+                      child:Text(key) );
+                }).toList(),
+                onChanged: (value){
+                  setState(() {
+                    all=value!;
+                    sliderValue=complexity[value]!;
+                  });
+                }),
 
             SizedBox(height: 70,),
             ElevatedButton(style: ElevatedButton.styleFrom(
@@ -106,9 +117,9 @@ class _QuizPageState extends State<Quizpage> {
                 borderRadius: BorderRadius.circular(6)
               ),
               backgroundColor: Colors.deepPurpleAccent,
-              minimumSize: Size(200, 48)
+              minimumSize: Size(200, 46)
             ),
-                onPressed:cubit.getQuiz,
+                onPressed:()=>cubit.getQuizByDifficulty(sliderValue, all),
                 child: Text('Start',
                   textAlign: TextAlign.center,style: TextStyle(fontSize: 20,
                     fontWeight: FontWeight.bold,
