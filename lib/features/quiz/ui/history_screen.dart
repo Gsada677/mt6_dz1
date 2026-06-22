@@ -3,14 +3,34 @@ import 'package:mt_6_dz1/features/quiz/data/app_database/app_database.dart';
 import 'package:mt_6_dz1/features/quiz/data/repositoryi/repo.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  final Repo? repo;
+
+  const HistoryScreen({super.key, this.repo});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  final repo = Repo();
+  late final Repo repo;
+  late final Stream<List<Result>> resultsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    repo = widget.repo ?? Repo();
+    resultsStream = repo.watchResults();
+  }
+
+  Future<void> _deleteResult(Result result) async {
+    await repo.deleteResult(result.id);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Result deleted')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +45,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
         centerTitle: true,
       ),
       body: StreamBuilder<List<Result>>(
-        stream: repo.watchResults(),
+        stream: resultsStream,
         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'History loading error: ${snapshot.error}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          }
+
           final results = snapshot.data ?? [];
 
           if (results.isEmpty) {
@@ -58,7 +98,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     IconButton(
-                      onPressed: () => repo.deleteResult(result.id),
+                      onPressed: () => _deleteResult(result),
                       icon: const Icon(Icons.delete_outline),
                     ),
                   ],

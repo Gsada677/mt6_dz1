@@ -1,19 +1,19 @@
-import 'dart:convert';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mt_6_dz1/features/quiz/data/model/Quiz_Model.dart';
-import 'package:mt_6_dz1/features/quiz/ui/Quiz_Questions.dart';
+import 'package:mt_6_dz1/features/quiz/data/repositoryi/repo.dart';
 import 'package:mt_6_dz1/features/quiz/ui/cubit/quiz_cubit.dart';
 import 'package:mt_6_dz1/features/quiz/ui/onBoarding.dart';
 import 'package:mt_6_dz1/features/quiz/ui/second_quiz_page.dart';
 
 void main() {
-  runApp( MaterialApp(
-      home:QuizOnboarding()));
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MaterialApp(home: QuizOnboarding()));
 }
 class Quizpage extends StatefulWidget{
+  final Repo? repo;
+
+  const Quizpage({super.key, this.repo});
+
   @override
   State<Quizpage> createState() => _QuizPageState();
 }
@@ -28,7 +28,14 @@ class _QuizPageState extends State<Quizpage> {
 
    };
   final cubit=QuizCubit();
+  late final Repo repo;
   int sliderValue=5;
+
+  @override
+  void initState() {
+    super.initState();
+    repo = widget.repo ?? Repo();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +48,7 @@ class _QuizPageState extends State<Quizpage> {
     if (state is QuizLoaded) {
       print(state.list.first);
       Navigator.push(context, MaterialPageRoute(builder: (_)=>SecondQuizPage(list: state.list,currentQuestion: 0,
-        difficulty: all,)));
+        difficulty: all, repo: repo,)));
     }
   },
   child: Column(

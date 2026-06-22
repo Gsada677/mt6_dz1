@@ -3,15 +3,22 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mt_6_dz1/features/quiz/data/model/Quiz_Model.dart';
 import 'package:mt_6_dz1/features/quiz/data/model/result_model.dart';
+import 'package:mt_6_dz1/features/quiz/data/repositoryi/repo.dart';
 import 'package:mt_6_dz1/features/quiz/ui/finish_screen.dart';
-import 'package:mt_6_dz1/features/quiz/ui/main.dart';
 
 class SecondQuizPage extends StatefulWidget {
   String difficulty;
-   int currentQuestion;
+  int currentQuestion;
   final List<QuizModel> list;
-   SecondQuizPage({super.key, required this.list,
-     required this.currentQuestion,required this.difficulty});
+  final Repo? repo;
+
+  SecondQuizPage({
+    super.key,
+    required this.list,
+    required this.currentQuestion,
+    required this.difficulty,
+    this.repo,
+  });
 
   @override
   State<SecondQuizPage> createState() => _SecondQuizPageState();
@@ -65,6 +72,7 @@ return ranColors[random.nextInt(ranColors.length)];
             widget.list.first.category,
             ((rightAnswers / widget.list.length) * 100).toInt(),
           ),
+          repo: widget.repo,
         ),
       ),
     );

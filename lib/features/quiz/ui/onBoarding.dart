@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mt_6_dz1/features/quiz/ui/main.dart';
+import 'package:mt_6_dz1/features/quiz/ui/quiz_bar_page.dart';
 class QuizOnboarding extends StatelessWidget {
   const QuizOnboarding({super.key});
 
@@ -14,7 +15,7 @@ class QuizOnboarding extends StatelessWidget {
       floatingActionButton:
       FloatingActionButton(onPressed: (){
         Navigator.push(context,
-            MaterialPageRoute(builder: (_)=>Quizpage()));
+            MaterialPageRoute(builder: (_)=>QuizBarPage()));
 
       },child: Text('Next',style: TextStyle(fontSize: 20,color: Colors.white),),backgroundColor: Colors.deepPurpleAccent,),
     );

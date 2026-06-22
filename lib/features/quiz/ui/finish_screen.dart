@@ -5,20 +5,22 @@ import 'package:mt_6_dz1/features/quiz/ui/history_screen.dart';
 
 class FinishScreen extends StatefulWidget {
   final ResultModel resultModel;
+  final Repo? repo;
 
-  const FinishScreen({super.key, required this.resultModel});
+  const FinishScreen({super.key, required this.resultModel, this.repo});
 
   @override
   State<FinishScreen> createState() => _FinishScreenState();
 }
 
 class _FinishScreenState extends State<FinishScreen> {
-  final repo = Repo();
+  late final Repo repo;
   late final Future<int> saveResultFuture;
 
   @override
   void initState() {
     super.initState();
+    repo = widget.repo ?? Repo();
     saveResultFuture = repo.saveResult(widget.resultModel);
   }
 
@@ -37,6 +39,26 @@ class _FinishScreenState extends State<FinishScreen> {
       body: FutureBuilder<int>(
         future: saveResultFuture,
         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Ошибка сохранения: ${snapshot.error}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -81,14 +103,6 @@ class _FinishScreenState extends State<FinishScreen> {
                         _info('result', '${widget.resultModel.percentage}%'),
                       ],
                     ),
-                    if (snapshot.hasError)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 16),
-                        child: Text(
-                          'Result was not saved',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -98,7 +112,7 @@ class _FinishScreenState extends State<FinishScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const HistoryScreen(),
+                      builder: (context) => HistoryScreen(repo: repo),
                     ),
                   );
                 },

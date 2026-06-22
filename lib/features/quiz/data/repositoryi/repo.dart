@@ -66,4 +66,8 @@ class Repo {
   Future<int> deleteResult(int id) {
     return _database.deleteResult(id);
   }
+
+  Future<int> deleteAllResults() {
+    return _database.deleteAllResults();
+  }
 }
